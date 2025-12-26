@@ -29,7 +29,7 @@ Kuack enables Kubernetes to schedule WebAssembly (WASM) workloads to browser-bas
 
 ## Quick Start
 
-For a full walkthrough, see the Quickstart in the docs. At a high level:
+For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) in the docs. At a high level:
 
 1. **Install Kuack via Helm:**
 
@@ -125,7 +125,7 @@ It's **not an option** for:
 - Privileged operations
 - Network services (listening on ports)
 
-See [Limitations](https://kuack.io/docs/limitations) for complete details.
+See [Limitations](https://kuack.io/docs/browser-runtime) for complete details.
 
 ## Contributing
 
@@ -142,9 +142,9 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for detai
 
 ## Links
 
-- **Website**: https://kuack.io
-- **Documentation**: https://kuack.io/docs
-- **Helm Chart**: https://github.com/kuack-io/helm
+- **Website**: <https://kuack.io>
+- **Documentation**: <https://kuack.io/docs>
+- **Helm Chart**: <https://github.com/kuack-io/helm>
 
 ## Status
 
