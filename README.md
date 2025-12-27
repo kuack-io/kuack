@@ -66,6 +66,9 @@ For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) i
      containers:
        - name: checker
          image: ghcr.io/kuack-io/checker:latest
+         env:
+          - name: TARGET_URL
+            value: "https://kuack.io"
    ```
 
    Apply it and then stream logs:
@@ -76,6 +79,8 @@ For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) i
    ```
 
 This uses a multi-arch image that can run both on regular nodes and in browsers. Just remove the `nodeSelector` to run the same on the regular node.
+
+**Note:** Log streaming (`kubectl logs`) will not work in K3s clusters because its implementation for kubelet connectivity (using a custom remotedialer tunnel) is non-standard. Support for K3s will be added in later releases. For now, please use Minikube, Kind, EKS, GKE, or other non-Rancher clusters.
 
 ## How It Works
 
