@@ -19,7 +19,6 @@ Kuack enables Kubernetes to schedule WebAssembly (WASM) workloads to browser-bas
 
 - **Virtual Kubelet Integration**: Works with standard Kubernetes APIs
 - **Multi-Platform Support**: Same image runs on Linux nodes and browser agents
-- **Hybrid Orchestration**: Automatic fallback from browsers to servers
 - **Zero Installation**: Works in any modern browser
 - **Resource Aggregation**: Sums CPU, memory, and GPU from connected agents
 
@@ -34,49 +33,56 @@ For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) i
 1. **Install Kuack via Helm:**
 
    ```bash
-   helm install kuack oci://ghcr.io/kuack-io/charts/kuack
+   helm install kuack oci://ghcr.io/kuack-io/charts/kuack --wait
    ```
 
 2. **Expose Node and Agent services locally (for a quick test):**
 
-   ```bash
-   kubectl port-forward service/kuack-node 8081:8080
-   kubectl port-forward service/kuack-agent 8080:8080
-   ```
+    Node:
+
+    ```bash
+    kubectl port-forward service/kuack-node 8081:8080
+    ```
+
+    Agent:
+
+    ```bash
+    kubectl port-forward service/kuack-agent 8080:8080
+    ```
 
 3. **Connect a browser agent:**
 
-   Open <http://localhost:8080> in your browser. The Agent UI should appear. Point it at the Node WebSocket endpoint, for example `ws://127.0.0.1:8081` when using the port-forwards above. Use default token value to connect.
+    Open <http://localhost:8080> in your browser. The Agent UI should appear. Point it at the Node WebSocket endpoint, for example `ws://127.0.0.1:8081` when using the port-forwards above. Use default token value to connect.
 
 4. **Run the checker example Pod:**
 
-   ```yaml
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     name: checker
-   spec:
-     nodeSelector:
-       kuack.io/node-type: kuack-node
-     tolerations:
-       - key: "kuack.io/provider"
-         operator: "Equal"
-         value: "kuack"
-         effect: "NoSchedule"
-     containers:
-       - name: checker
-         image: ghcr.io/kuack-io/checker:latest
-         env:
-          - name: TARGET_URL
-            value: "https://kuack.io"
-   ```
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: checker
+    spec:
+      nodeSelector:
+        kuack.io/node-type: kuack-node
+      tolerations:
+        - key: "kuack.io/provider"
+          operator: "Equal"
+          value: "kuack"
+          effect: "NoSchedule"
+      containers:
+        - name: checker
+          image: ghcr.io/kuack-io/checker:latest
+          env:
+            - name: TARGET_URL
+              value: "https://kuack.io"
+    ```
 
-   Apply it and then stream logs:
+    Apply it and then stream logs:
 
-   ```bash
-   kubectl apply -f checker.yaml
-   kubectl logs -f checker
-   ```
+    ```bash
+    kubectl apply -f checker.yaml
+    kubectl logs -f checker
+    ```
 
 This uses a multi-arch image that can run both on regular nodes and in browsers. Just remove the `nodeSelector` to run the same on the regular node.
 
