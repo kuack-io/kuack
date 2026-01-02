@@ -140,7 +140,9 @@ See [Limitations](https://kuack.io/docs/browser-runtime) for complete details.
 
 ## Contributing
 
-Contributions are welcome! Areas where help is needed:
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for information about the development process and tools available to simplify development.
+
+Areas where help is needed:
 
 - Documentation improvements
 - Additional example applications
