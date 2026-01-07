@@ -119,6 +119,8 @@ Kuack consists of multiple components:
 - **[helm](https://github.com/kuack-io/helm)**: Helm chart for deployment
 - **[checker](https://github.com/kuack-io/checker)**: Example WASM application (Rust)
 - **[docs](https://github.com/kuack-io/docs)**: Documentation repository
+- **[e2e](https://github.com/kuack-io/e2e)**: End-to-end test suite (Cucumber, BDD)
+- **[devspace](https://github.com/kuack-io/devspace)**: Local development setup for Kuack
 
 ## Limitations
 
@@ -145,9 +147,10 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for inf
 Areas where help is needed:
 
 - Documentation improvements
-- Additional example applications
+- Additional example applications, including [container2wasm](https://github.com/container2wasm/container2wasm) cases
 - Bug fixes and stability improvements
-- Feature implementation
+- Feature implementation (persistence, horizontal scaling, etc)
+- End-to-end tests for our [e2e](https://github.com/kuack-io/e2e) suite
 
 ## License
 
