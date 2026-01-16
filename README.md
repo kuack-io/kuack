@@ -19,6 +19,7 @@ Kuack enables Kubernetes to schedule WebAssembly (WASM) workloads to browser-bas
 
 - **Virtual Kubelet Integration**: Works with standard Kubernetes APIs
 - **Multi-Platform Support**: Same image runs on Linux nodes and browser agents
+- **Container2Wasm Support**: Run existing containers converted to WASM (see [c2w-examples](https://github.com/kuack-io/c2w-examples))
 - **Zero Installation**: Works in any modern browser
 - **Resource Aggregation**: Sums CPU, memory, and GPU from connected agents
 
@@ -120,6 +121,7 @@ Kuack consists of multiple components:
 - **[checker](https://github.com/kuack-io/checker)**: Example WASM application (Rust)
 - **[docs](https://github.com/kuack-io/docs)**: Documentation repository
 - **[e2e](https://github.com/kuack-io/e2e)**: End-to-end test suite (Cucumber, BDD)
+- **[c2w-examples](https://github.com/kuack-io/c2w-examples)**: Example container images converted to WASM (Python, Node.js, Ubuntu, etc.)
 - **[devspace](https://github.com/kuack-io/devspace)**: Local development setup for Kuack
 
 ## Limitations
