@@ -19,6 +19,7 @@ Kuack enables Kubernetes to schedule WebAssembly (WASM) workloads to browser-bas
 
 - **Virtual Kubelet Integration**: Works with standard Kubernetes APIs
 - **Multi-Platform Support**: Same image runs on Linux nodes and browser agents
+- **Fallback to Regular Nodes**: Pods can automatically failover to regular cluster nodes if no browser agents are available
 - **Container2Wasm Support**: Run existing containers converted to WASM (see [c2w-examples](https://github.com/kuack-io/c2w-examples))
 - **Zero Installation**: Works in any modern browser
 - **Resource Aggregation**: Sums CPU, memory, and GPU from connected agents
@@ -55,6 +56,8 @@ For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) i
 
     Open <http://localhost:8080> in your browser. The Agent UI should appear. Point it at the Node WebSocket endpoint, for example `ws://127.0.0.1:8081` when using the port-forwards above. Use default token value to connect.
 
+    > **Note**: This standalone Agent UI is a **demonstration** app. In a real production scenario, you would embed the Kuack Agent library directly into your own frontend application, so your users connect automatically when they visit your site.
+
 4. **Run the checker example Pod:**
 
     ```yaml
@@ -85,7 +88,25 @@ For a full walkthrough, see the [Quickstart](https://kuack.io/docs/quickstart) i
     kubectl logs -f checker
     ```
 
-This uses a multi-arch image that can run both on regular nodes and in browsers. Just remove the `nodeSelector` to run the same on the regular node.
+This uses a multi-arch image that can run both on regular nodes and in browsers.
+
+**To see both worlds in action:**
+1.  Keep the `nodeSelector` to force execution on the browser (Kuack node).
+2.  Remove `nodeSelector` and `tolerations` to let Kubernetes schedule it on a regular node (if available).
+3.  **The Killer Feature**: Use `affinity` (or just rely on scheduler scoring) to prefer browsers but fall back to regular nodes.
+
+```yaml
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+                - key: kuack.io/node-type
+                  operator: In
+                  values:
+                    - kuack-node
+```
 
 **Note:** Log streaming (`kubectl logs`) will not work in K3s clusters because its implementation for kubelet connectivity (using a custom remotedialer tunnel) is non-standard. Support for K3s will be added in later releases. For now, please use Minikube, Kind, EKS, GKE, or other non-Rancher clusters.
 
@@ -93,7 +114,11 @@ This uses a multi-arch image that can run both on regular nodes and in browsers.
 
 ### 1. Agent Connection
 
-Browser agents connect to the Kuack Node via WebSocket, reporting available resources (CPU, memory, GPU).
+### 1. Agent Connection
+
+Browser agents connect to the Kuack Node via WebSocket.
+*   **Demo**: You open the standalone Agent UI page.
+*   **Production**: The Agent library is running in background on your users' existing tabs (e.g., in your web app), connecting automatically.
 
 ### 2. Resource Aggregation
 
@@ -110,6 +135,101 @@ The agent downloads the WASM binary from the Registry Proxy and executes it in t
 ### 5. Results
 
 Execution results and logs stream back to Kubernetes via the Node.
+
+## Integration
+
+### Production: Embed the Agent
+
+For production, you don't ask users to open a separate "Kuack Agent" page. Instead, you integrate the agent library into your existing web application.
+
+*   **Zero friction**: Users contribute capacity just by browsing your site.
+*   **Seamless**: The agent runs in a WebWorker in the background.
+
+*(Integration documentation coming soon)*
+
+## Run Standard Containers (Container2Wasm)
+
+One of Kuack's most powerful features is the ability to run **standard OCI images** (like Python, Node.js, Ubuntu, Busybox, etc.) in the browser.
+
+We use [container2wasm](https://github.com/ktock/container2wasm) to convert x86_64 containers into WASM/WASI images. These images are multi-arch: they run natively on Linux nodes and as WASM in the browser agent! You can find ready-to-use images in our [c2w-examples](https://github.com/kuack-io/c2w-examples) repository or create your own.
+
+### Examples
+
+You can try these ready-to-use images immediately. They are hosted in our [c2w-examples](https://github.com/kuack-io/c2w-examples) repository.
+
+<details>
+<summary><strong>Python</strong></summary>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python-c2w
+spec:
+  nodeSelector:
+    kuack.io/node-type: kuack-node
+  tolerations:
+    - key: "kuack.io/provider"
+      operator: "Equal"
+      value: "kuack"
+      effect: "NoSchedule"
+  containers:
+    - name: python
+      image: ghcr.io/kuack-io/c2w-examples/python:3.14-alpine
+      command: ["python3", "-c", "print('Hello from Python in the Browser!')"]
+```
+
+</details>
+
+<details>
+<summary><strong>Node.js</strong></summary>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-c2w
+spec:
+  nodeSelector:
+    kuack.io/node-type: kuack-node
+  tolerations:
+    - key: "kuack.io/provider"
+      operator: "Equal"
+      value: "kuack"
+      effect: "NoSchedule"
+  containers:
+    - name: node
+      image: ghcr.io/kuack-io/c2w-examples/node:24-alpine
+      command: ["node", "-e", "console.log('Hello from Node.js in the Browser!')"]
+```
+
+</details>
+
+<details>
+<summary><strong>Ubuntu</strong></summary>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-c2w
+spec:
+  nodeSelector:
+    kuack.io/node-type: kuack-node
+  tolerations:
+    - key: "kuack.io/provider"
+      operator: "Equal"
+      value: "kuack"
+      effect: "NoSchedule"
+  containers:
+    - name: ubuntu
+      image: ghcr.io/kuack-io/c2w-examples/ubuntu:24.04
+      command: ["/bin/bash", "-c", "cat /etc/os-release"]
+```
+
+</details>
+
+*Note:* Remember that networking is currently restricted in browser-based executions.
 
 ## Ecosystem
 
@@ -140,6 +260,10 @@ It's **not an option** for:
 - Privileged operations
 - Network services (listening on ports)
 
+### Specific Limits
+
+- **Environment Variables**: Due to WASI constraints, the total size of environment variables (IOV_MAX) is limited to **1024 bytes**. Keep env vars concise.
+
 See [Limitations](https://kuack.io/docs/browser-runtime) for complete details.
 
 ## Contributing
@@ -151,8 +275,17 @@ Areas where help is needed:
 - Documentation improvements
 - Additional example applications, including [container2wasm](https://github.com/container2wasm/container2wasm) cases
 - Bug fixes and stability improvements
-- Feature implementation (persistence, horizontal scaling, etc)
 - End-to-end tests for our [e2e](https://github.com/kuack-io/e2e) suite
+
+## Roadmap
+
+We have ambitious plans to take Kuack from prototype to production-grade:
+
+- **Registry Separation**: Extracting the internal registry into a standalone, scalable service (currently in-memory).
+- **Distributed Nodes**: Moving from a single-node architecture to a horizontally scalable, distributed system (likely using Redis for coordination).
+- **Persistence**: Implementing caching layer for WASM binaries and logs (currently in-memory).
+- **Log Collection**: Adding sidecar support to run reliable log collectors like Fluentbit or Promtail on the virtual node.
+- **High Concurrency**: Optimizing for millions of concurrent agent connections.
 
 ## License
 
